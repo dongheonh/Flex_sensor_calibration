@@ -1,0 +1,88 @@
+clear, clc 
+close all
+
+load('flex1_0.mat'); v_e(:,1) = v;
+load('flex1_10.mat'); v_e(:,2) = v;
+load('flex1_20.mat'); v_e(:,3) = v;
+load('flex1_30.mat'); v_e(:,4) = v;
+load('flex1_40.mat'); v_e(:,5) = v;
+load('flex1_50.mat'); v_e(:,6) = v;
+load('flex1_60.mat'); v_e(:,7) = v;
+load('flex1_70.mat'); v_e(:,8) = v;
+load('flex1_80.mat'); v_e(:,9) = v;
+load('flex1_90.mat'); v_e(:,10) = v;
+
+t = 1:500;
+
+figure(1)
+v_mean = zeros(width(v_e),1);
+v_rmse = zeros(width(v_e),1);
+sum_v_rmse = 0;
+for i = 1:width(v_e)
+    sum = 0;
+    v_mean(i,1) = mean(v_e(:,i));
+
+    for j = 1: length(t)
+        sum = sum + ((v_mean(i,1) - v_e(j,i))^2) / 500; % Update sum with squared difference
+
+    end % End of the loop
+    v_rmse(i,1) = sqrt(sum);
+    sum_v_rmse = sum_v_rmse + v_rmse(i,1)^2;
+
+    plot(t,v_e(:,i))
+    hold on
+end
+
+
+v_rms_rmse = sqrt(sum_v_rmse/length(v_rmse));
+
+r_e = zeros(500,10);
+for j = 1: 10
+    for i = 1:500
+        r_e(i,j) = -6250*(5*sqrt(25*v_e(i,j)^2 + 375280*v_e(i,j)+1404600484) + 31*v_e(i,j)-187390)/(28*v_e(i,j) - 1750015);
+    end 
+end 
+
+% Wolfram Alpha: 5/(((2/25000)+1/y)^-1 + 1500) = (2*(5-x)/25000) + 5-x/(y) 
+
+title('Voltage at different angles (0 to 90 degrees)', 'FontSize',15)
+xlabel('Iterations (n)', 'FontSize',13)
+ylabel('Voltage (V)', 'FontSize',13)
+
+figure(2)
+r_mean = zeros(width(r_e),1);
+for i = 1:width(v_e)
+    r_mean(i,1) = mean(r_e(:,i));
+    plot(t,r_e(:,i))
+    hold on
+end
+
+title('Resistance at different angles (0 to 90 degrees)', 'FontSize',15)
+xlabel('Iterations (n)', 'FontSize',13)
+ylabel('Resistance (Ohm)', 'FontSize',13)
+
+deg = 0:10:90;
+figure(3)
+
+
+quadraticFit = fittype('poly2');
+[quadratic_fit_plot, rmse_poly] = fit(deg',v_mean,quadraticFit);
+
+predBounds = predint(quadratic_fit_plot, deg, 0.95);
+
+
+p = polyfit(deg,v_mean,2);
+deg_interp = 1:90;
+plot(deg_interp,quadratic_fit_plot.p1.*deg_interp.^2 + ...
+    quadratic_fit_plot.p2*deg_interp + quadratic_fit_plot.p3, 'k' ,'LineWidth', 2.5)
+hold on 
+plot(deg,v_mean, 'b*','LineWidth',2)
+plot(deg, predBounds, 'r--','LineWidth',2); % prediction bounds
+
+
+title('Angle vs Voltage Calibration', 'FontSize',15)
+xlabel('Angle \theta (Deg)', 'FontSize',13)
+ylabel('Voltage (V)', 'FontSize',13)
+legend({'V = 1.719 \times 10^{-5} \theta^{2} + 0.0001099 \theta + 0.1659', ...
+    'Experimental Data', 'Prediction Intervals (RMSE = 0.0075 at 95% confidence)'}, ...
+    'FontSize',12, 'Location','northwest')

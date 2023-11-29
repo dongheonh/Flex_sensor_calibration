@@ -45,6 +45,5 @@ xlabel('Iteration (n)', 'FontSize',13)
 ylabel('Voltage (V)', 'FontSize',13)
 
 % Add a legend to the plot with labels for each data series
-legend({'Experimental Data', 'Mean = 0.3067V (RMSE = 0.0015V)'}, 'FontSize',12, 'Location','southeast')
-
-save('flex1_80.mat')
+legend({'Experimental Data', 'Mean = 0.2997V (RMSE = 0.0020V)'}, 'FontSize',12, 'Location','southeast')
+save('example.mat')
